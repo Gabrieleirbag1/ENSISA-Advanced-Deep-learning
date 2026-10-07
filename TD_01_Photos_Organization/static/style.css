@@ -1,0 +1,726 @@
+/* ============================================================
+   Base
+   ============================================================ */
+
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --background: #0f1115;
+    --surface: #17191f;
+    --surface-secondary: #22252d;
+
+    --text: #f1f3f5;
+    --text-secondary: #9298a5;
+
+    --border: #292d36;
+
+    --accent: #818cf8;
+    --accent-light: #242640;
+
+    --radius: 12px;
+}
+
+body {
+    margin: 0;
+
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+
+    background: var(--background);
+    color: var(--text);
+}
+
+
+/* ============================================================
+   Header
+   ============================================================ */
+
+.header {
+    height: 64px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 36px;
+
+    background: var(--surface);
+
+    border-bottom: 1px solid var(--border);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.brand-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 32px;
+    height: 32px;
+
+    border-radius: 9px;
+
+    background: var(--accent);
+    color: white;
+
+    font-size: 17px;
+}
+
+.photo-count {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+
+/* ============================================================
+   Navigation
+   ============================================================ */
+
+.navigation {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 14px 24px;
+
+    background: var(--surface);
+
+    border-bottom: 1px solid var(--border);
+}
+
+.nav-button {
+    padding: 9px 18px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: transparent;
+
+    color: var(--text-secondary);
+
+    font-size: 14px;
+    font-weight: 500;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+.nav-button:hover {
+    background: var(--surface-secondary);
+    color: var(--text);
+}
+
+.nav-button.active {
+    background: var(--accent-light);
+    color: var(--accent);
+}
+
+
+/* ============================================================
+   Main content
+   ============================================================ */
+
+.content {
+    max-width: 1400px;
+
+    margin: 0 auto;
+
+    padding: 36px;
+}
+
+.view {
+    display: none;
+}
+
+.view.active {
+    display: block;
+}
+
+.view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 28px;
+}
+
+.view-header h1 {
+    margin: 0 0 7px 0;
+
+    font-size: 26px;
+    font-weight: 650;
+}
+
+.view-header p {
+    margin: 0;
+
+    color: var(--text-secondary);
+
+    font-size: 14px;
+}
+
+
+/* ============================================================
+   Photo collection
+   ============================================================ */
+
+.photo-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fill, minmax(160px, 1fr));
+
+    gap: 14px;
+}
+
+.photo-card {
+    position: relative;
+
+    aspect-ratio: 1;
+
+    overflow: hidden;
+
+    border-radius: var(--radius);
+
+    background: var(--surface-secondary);
+
+    cursor: pointer;
+}
+
+.photo-card img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    display: block;
+
+    transition: transform 0.2s ease;
+}
+
+.photo-card:hover img {
+    transform: scale(1.04);
+}
+
+
+/* ============================================================
+   Empty states
+   ============================================================ */
+
+.empty-state {
+    grid-column: 1 / -1;
+
+    min-height: 300px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    color: var(--text-secondary);
+}
+
+.empty-icon {
+    width: 54px;
+    height: 54px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 14px;
+
+    border-radius: 14px;
+
+    background: var(--surface-secondary);
+
+    font-size: 27px;
+}
+
+.empty-state h2 {
+    margin: 0 0 6px 0;
+
+    color: var(--text);
+
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.empty-state p {
+    margin: 0;
+
+    font-size: 14px;
+}
+
+/* ============================================================
+   Photo map
+   ============================================================ */
+
+.map-container {
+    width: 100%;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius);
+
+    overflow: hidden;
+}
+
+
+/*
+ * #photo-map acts as the viewport.
+ *
+ * The world inside it can be translated and scaled by app.js.
+ */
+.photo-map {
+    position: relative;
+
+    width: 100%;
+    height: 650px;
+
+    overflow: hidden;
+
+    background: var(--surface);
+
+    cursor: grab;
+
+    user-select: none;
+}
+
+
+/*
+ * Change the cursor while panning.
+ */
+.photo-map.dragging {
+    cursor: grabbing;
+}
+
+
+/*
+ * Everything inside the representation space lives in this
+ * element. app.js applies zoom and pan transformations here.
+ */
+.map-world {
+    position: absolute;
+
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    height: 100%;
+
+    transform-origin: 0 0;
+
+    /*
+     * The dotted background now belongs to the world rather
+     * than the viewport, so it moves and scales naturally
+     * during zooming and panning.
+     */
+    background:
+        radial-gradient(
+            circle,
+            #343842 1px,
+            transparent 1px
+        );
+
+    background-size: 24px 24px;
+}
+
+
+/* ============================================================
+   Photo map grid
+   ============================================================ */
+
+.map-grid-line {
+    position: absolute;
+
+    z-index: 0;
+
+    pointer-events: none;
+
+    background: rgba(146, 152, 165, 0.16);
+}
+
+
+.map-grid-line-vertical {
+    top: 5%;
+    bottom: 5%;
+
+    width: 1px;
+}
+
+
+.map-grid-line-horizontal {
+    left: 5%;
+    right: 5%;
+
+    height: 1px;
+}
+
+
+/* ============================================================
+   Photo map axes
+   ============================================================ */
+
+.map-axis-tick {
+    position: absolute;
+
+    z-index: 2;
+
+    color: var(--text-secondary);
+
+    font-size: 11px;
+    font-weight: 500;
+
+    line-height: 1;
+
+    pointer-events: none;
+
+    white-space: nowrap;
+}
+
+
+/*
+ * X-axis values are placed near the bottom of the map.
+ */
+.map-axis-tick-x {
+    bottom: 1.5%;
+
+    transform: translateX(-50%);
+}
+
+
+/*
+ * Y-axis values are placed near the left side of the map.
+ */
+.map-axis-tick-y {
+    left: 1.5%;
+
+    transform: translateY(-50%);
+}
+
+
+/* ============================================================
+   Photos inside the map
+   ============================================================ */
+
+.map-photo {
+    position: absolute;
+
+    z-index: 3;
+
+    width: 58px;
+    height: 58px;
+
+    border-radius: 9px;
+
+    object-fit: cover;
+
+    border: 3px solid #f1f3f5;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.15);
+
+    cursor: pointer;
+
+    transform:
+        translate(-50%, -50%)
+        scale(var(--map-photo-scale, 1));
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+
+.map-photo:hover {
+    transform:
+        translate(-50%, -50%)
+        scale(calc(var(--map-photo-scale, 1) * 1.18));
+
+    box-shadow:
+        0 5px 16px rgba(0, 0, 0, 0.25);
+
+    z-index: 10;
+}
+
+/* ============================================================
+   Groups
+   ============================================================ */
+
+.groups-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fill, minmax(300px, 1fr));
+
+    gap: 20px;
+}
+
+.group-card {
+    padding: 18px;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius);
+}
+
+.group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 14px;
+}
+
+.group-title {
+    margin: 0;
+
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.group-count {
+    color: var(--text-secondary);
+
+    font-size: 13px;
+}
+
+.group-preview {
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 5px;
+}
+
+.group-preview img {
+    width: 100%;
+
+    aspect-ratio: 1;
+
+    object-fit: cover;
+
+    border-radius: 6px;
+}
+
+
+/* ============================================================
+   Photo inspection panel
+   ============================================================ */
+
+.photo-panel {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 100;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 40px;
+
+    background: rgba(0, 0, 0, 0.62);
+
+    backdrop-filter: blur(5px);
+}
+
+.photo-panel.hidden {
+    display: none;
+}
+
+.photo-panel-content {
+    position: relative;
+
+    width: min(1050px, 95vw);
+    max-height: 88vh;
+
+    display: grid;
+
+    grid-template-columns: 1.15fr 1fr;
+
+    overflow: auto;
+
+    background: var(--surface);
+
+    border-radius: 16px;
+}
+
+#selected-photo {
+    width: 100%;
+    height: 100%;
+
+    min-height: 500px;
+
+    object-fit: contain;
+
+    background: #090a0c;
+}
+
+.photo-information {
+    padding: 30px;
+}
+
+.photo-information h2 {
+    margin: 0 0 30px 0;
+
+    font-size: 20px;
+}
+
+.neighbour-title {
+    margin-bottom: 12px;
+
+    color: var(--text-secondary);
+
+    font-size: 13px;
+    font-weight: 600;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.05em;
+}
+
+.neighbour-grid {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 8px;
+}
+
+.neighbour-card {
+    position: relative;
+}
+
+.neighbour-card img {
+    width: 100%;
+
+    aspect-ratio: 1;
+
+    object-fit: cover;
+
+    border-radius: 7px;
+}
+
+.similarity {
+    position: absolute;
+
+    right: 5px;
+    bottom: 7px;
+
+    padding: 3px 6px;
+
+    border-radius: 5px;
+
+    background: rgba(0, 0, 0, 0.72);
+
+    color: white;
+
+    font-size: 11px;
+}
+
+
+/* ============================================================
+   Close button
+   ============================================================ */
+
+.close-button {
+    position: fixed;
+
+    top: 22px;
+    right: 28px;
+
+    z-index: 110;
+
+    width: 42px;
+    height: 42px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.94);
+
+    color: #222;
+
+    font-size: 26px;
+
+    cursor: pointer;
+
+    transition: transform 0.15s ease;
+}
+
+.close-button:hover {
+    transform: scale(1.08);
+}
+
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 750px) {
+
+    .header {
+        padding: 0 18px;
+    }
+
+    .content {
+        padding: 24px 18px;
+    }
+
+    .photo-grid {
+        grid-template-columns:
+            repeat(auto-fill, minmax(120px, 1fr));
+    }
+
+    .photo-panel {
+        padding: 15px;
+    }
+
+    .photo-panel-content {
+        grid-template-columns: 1fr;
+    }
+
+    #selected-photo {
+        min-height: 300px;
+        max-height: 50vh;
+    }
+
+    .photo-information {
+        padding: 20px;
+    }
+
+    .photo-map {
+        height: 500px;
+    }
+}

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PhotoMap</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <span class="brand-icon">◉</span>
+            <span class="brand-name">PhotoMap</span>
+        </div>
+
+        <div class="photo-count">
+            <span id="photo-count">0</span> photos
+        </div>
+    </header>
+
+
+    <!-- Navigation -->
+    <nav class="navigation">
+        <button class="nav-button active" data-view="collection">
+            Collection
+        </button>
+
+        <button class="nav-button" data-view="map">
+            Photo Map
+        </button>
+
+        <button class="nav-button" data-view="groups">
+            Groups
+        </button>
+    </nav>
+
+
+    <!-- Main content -->
+    <main class="content">
+
+        <!-- ================================================== -->
+        <!-- Collection                                         -->
+        <!-- ================================================== -->
+
+        <section id="collection-view" class="view active">
+
+            <div class="view-header">
+                <div>
+                    <h1>Your Photo Collection</h1>
+                    <p>
+                        Explore the photos available in your collection.
+                    </p>
+                </div>
+            </div>
+
+            <div id="photo-grid" class="photo-grid">
+
+                <!--
+                    Photos will eventually be inserted here
+                    automatically by app.js.
+                -->
+
+                <div class="empty-state">
+                    <div class="empty-icon">▧</div>
+
+                    <h2>No photos loaded</h2>
+
+                    <p>
+                        Your photo collection will appear here.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================================================== -->
+        <!-- Photo Map                                          -->
+        <!-- ================================================== -->
+
+        <section id="map-view" class="view">
+
+            <div class="view-header">
+                <div>
+                    <h1>Photo Map</h1>
+
+                    <p>
+                        Explore how your photos are organized in the
+                        representation space.
+                    </p>
+                </div>
+            </div>
+
+            <div class="map-container">
+
+                <div id="photo-map" class="photo-map">
+
+                    <!--
+                        The 2D photo visualization will be rendered here.
+                    -->
+
+                    <div class="empty-state">
+                        <div class="empty-icon">◎</div>
+
+                        <h2>No map available</h2>
+
+                        <p>
+                            Analyze the collection to generate the photo map.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================================================== -->
+        <!-- Groups                                             -->
+        <!-- ================================================== -->
+
+        <section id="groups-view" class="view">
+
+            <div class="view-header">
+                <div>
+                    <h1>Discovered Groups</h1>
+
+                    <p>
+                        Browse groups of visually related photos discovered
+                        in your collection.
+                    </p>
+                </div>
+            </div>
+
+            <div id="groups-grid" class="groups-grid">
+
+                <!--
+                    Groups will eventually be inserted here by app.js.
+                -->
+
+                <div class="empty-state">
+                    <div class="empty-icon">◌</div>
+
+                    <h2>No groups discovered</h2>
+
+                    <p>
+                        Analyze the collection to discover groups.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- Photo inspection panel -->
+    <div id="photo-panel" class="photo-panel hidden">
+
+        <button id="close-photo-panel" class="close-button">
+            ×
+        </button>
+
+        <div class="photo-panel-content">
+
+            <img
+                id="selected-photo"
+                src=""
+                alt="Selected photo"
+            >
+
+            <div class="photo-information">
+
+                <h2 id="selected-photo-name">
+                    Photo
+                </h2>
+
+                <p class="neighbour-title">
+                    Nearest photos
+                </p>
+
+                <div
+                    id="neighbour-grid"
+                    class="neighbour-grid"
+                >
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script
+        src="{{ url_for('static', filename='app.js') }}"
+    ></script>
+
+</body>
+</html>
