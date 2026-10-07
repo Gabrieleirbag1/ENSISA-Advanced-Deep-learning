@@ -2,7 +2,7 @@ from pathlib import Path
 
 from flask import Flask, jsonify, render_template, send_from_directory
 
-from random_pipeline import (
+from pipeline import (
     discover_groups,
     find_neighbours,
     get_photos,
@@ -12,7 +12,7 @@ from random_pipeline import (
 
 app = Flask(__name__)
 
-PHOTO_DIR = Path("data/mock_photos")
+PHOTO_DIR = Path("data/photos")
 
 
 @app.route("/")
