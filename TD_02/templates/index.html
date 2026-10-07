@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Quenya Translator</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/chart.js"
+    ></script>
+</head>
+
+
+<body>
+
+    <!-- ================================================== -->
+    <!-- Header                                             -->
+    <!-- ================================================== -->
+
+    <header class="main-header">
+
+        <div class="header-content">
+
+            <div>
+                <h1>Quenya Translator</h1>
+
+                <p class="subtitle">
+                    Fine-tuning a Transformer for
+                    English → Quenya translation
+                </p>
+            </div>
+
+            <div
+                id="model-status"
+                class="model-status"
+            >
+                Loading model information...
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- ================================================== -->
+    <!-- Navigation                                         -->
+    <!-- ================================================== -->
+
+    <nav class="tabs">
+
+        <button
+            id="training-tab"
+            class="tab active"
+            data-page="training-page"
+        >
+            Fine-Tuning
+        </button>
+
+        <button
+            id="translation-tab"
+            class="tab"
+            data-page="translation-page"
+        >
+            Translation
+        </button>
+
+    </nav>
+
+
+    <main class="container">
+
+
+        <!-- ================================================== -->
+        <!-- Training page                                      -->
+        <!-- ================================================== -->
+
+        <section
+            id="training-page"
+            class="page active"
+        >
+
+            <div class="page-title">
+
+                <h2>Fine-Tune the Transformer</h2>
+
+                <p>
+                    Adapt the pretrained T5 model to translate
+                    English sentences into Quenya.
+                </p>
+
+            </div>
+
+
+            <div class="training-layout">
+
+
+                <!-- ========================================== -->
+                <!-- Training parameters                        -->
+                <!-- ========================================== -->
+
+                <div class="panel">
+
+                    <h3>Training Parameters</h3>
+
+
+                    <div class="parameter">
+
+                        <div class="parameter">
+
+                        <label for="configuration-name">
+                            Configuration name
+                        </label>
+
+                        <input
+                            id="configuration-name"
+                            type="text"
+                            placeholder="e.g. baseline_100_epochs"
+                            required
+                        >
+
+                        </div>
+
+                        <label for="epochs">
+                            Epochs
+                        </label>
+
+                        <input
+                            id="epochs"
+                            type="number"
+                            value="50"
+                            min="1"
+                        >
+
+                    </div>
+
+
+                    <div class="parameter">
+
+                        <label for="batch-size">
+                            Batch size
+                        </label>
+
+                        <input
+                            id="batch-size"
+                            type="number"
+                            value="8"
+                            min="1"
+                        >
+
+                    </div>
+
+
+                    <div class="parameter">
+
+                        <label for="learning-rate">
+                            Learning rate
+                        </label>
+
+                        <input
+                            id="learning-rate"
+                            type="number"
+                            value="0.0005"
+                            step="0.0001"
+                            min="0"
+                        >
+
+                    </div>
+
+
+                    <div class="parameter">
+
+                        <label for="max-length">
+                            Maximum sequence length
+                        </label>
+
+                        <input
+                            id="max-length"
+                            type="number"
+                            value="64"
+                            min="1"
+                        >
+
+                    </div>
+
+
+                    <button
+                        id="train-button"
+                        class="primary-button"
+                    >
+                        Begin Fine-Tuning
+                    </button>
+
+
+                    <div
+                        id="training-message"
+                        class="message"
+                    ></div>
+
+                </div>
+
+
+                <!-- ========================================== -->
+                <!-- Training visualization                     -->
+                <!-- ========================================== -->
+
+                <div class="panel training-monitor">
+
+                    <div class="monitor-header">
+
+                        <h3>Training Progress</h3>
+
+                        <span
+                            id="training-state"
+                            class="state-badge idle"
+                        >
+                            Idle
+                        </span>
+
+                    </div>
+
+
+                    <div class="progress-information">
+
+                        <div class="metric">
+
+                            <span class="metric-label">
+                                Epoch
+                            </span>
+
+                            <span
+                                id="current-epoch"
+                                class="metric-value"
+                            >
+                                0 / 0
+                            </span>
+
+                        </div>
+
+
+                        <div class="metric">
+
+                            <span class="metric-label">
+                                Current loss
+                            </span>
+
+                            <span
+                                id="current-loss"
+                                class="metric-value"
+                            >
+                                —
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="progress-bar-container">
+
+                        <div
+                            id="progress-bar"
+                            class="progress-bar"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="chart-container">
+
+                        <canvas id="loss-chart"></canvas>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ============================================== -->
+            <!-- Transformer training pipeline                  -->
+            <!-- ============================================== -->
+
+            <div class="panel pipeline-panel">
+
+                <h3>What is happening?</h3>
+
+                <div class="training-pipeline">
+
+
+                    <div
+                        id="pipeline-data"
+                        class="pipeline-step"
+                    >
+
+                        <span class="step-number">
+                            1
+                        </span>
+
+                        <strong>Dataset</strong>
+
+                        <span>
+                            English / Quenya pairs
+                        </span>
+
+                    </div>
+
+
+                    <div class="pipeline-arrow">
+                        →
+                    </div>
+
+
+                    <div
+                        id="pipeline-tokenizer"
+                        class="pipeline-step"
+                    >
+
+                        <span class="step-number">
+                            2
+                        </span>
+
+                        <strong>Tokenizer</strong>
+
+                        <span>
+                            SentencePiece
+                        </span>
+
+                    </div>
+
+
+                    <div class="pipeline-arrow">
+                        →
+                    </div>
+
+
+                    <div
+                        id="pipeline-transformer"
+                        class="pipeline-step"
+                    >
+
+                        <span class="step-number">
+                            3
+                        </span>
+
+                        <strong>Transformer</strong>
+
+                        <span>
+                            Forward pass
+                        </span>
+
+                    </div>
+
+
+                    <div class="pipeline-arrow">
+                        →
+                    </div>
+
+
+                    <div
+                        id="pipeline-loss"
+                        class="pipeline-step"
+                    >
+
+                        <span class="step-number">
+                            4
+                        </span>
+
+                        <strong>Loss</strong>
+
+                        <span>
+                            Cross-entropy
+                        </span>
+
+                    </div>
+
+
+                    <div class="pipeline-arrow">
+                        →
+                    </div>
+
+
+                    <div
+                        id="pipeline-update"
+                        class="pipeline-step"
+                    >
+
+                        <span class="step-number">
+                            5
+                        </span>
+
+                        <strong>Update</strong>
+
+                        <span>
+                            Backpropagation
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================================================== -->
+        <!-- Translation page                                   -->
+        <!-- ================================================== -->
+
+        <section
+            id="translation-page"
+            class="page"
+        >
+
+            <div class="page-title">
+
+                <h2>Translate into Quenya</h2>
+
+                <p>
+                    Follow an English sentence through the
+                    tokenizer, encoder and autoregressive decoder.
+                </p>
+
+            </div>
+
+
+            <!-- ============================================== -->
+            <!-- Translation controls                           -->
+            <!-- ============================================== -->
+
+            <div class="panel">
+
+                <div class="translation-controls">
+
+
+                    <div class="sentence-input">
+
+                        <label for="translation-input">
+                            English sentence
+                        </label>
+
+                        <input
+                            id="translation-input"
+                            type="text"
+                            placeholder="Where are you going?"
+                        >
+
+                    </div>
+
+
+                    <div class="model-choice">
+
+                        <label>
+                            Model
+                        </label>
+
+                        <select id="translation-model">
+
+                            <option value="">
+                                Original pretrained T5
+                            </option>
+
+                        </select>
+
+                        <div
+                            id="selected-model-config"
+                            class="model-config hidden"
+                        >
+
+                            <div class="config-title">
+                                Fine-tuning configuration
+                            </div>
+
+                            <div class="config-grid">
+
+                                <div>
+                                    <span>Epochs</span>
+                                    <strong id="config-epochs">—</strong>
+                                </div>
+
+                                <div>
+                                    <span>Batch size</span>
+                                    <strong id="config-batch-size">—</strong>
+                                </div>
+
+                                <div>
+                                    <span>Learning rate</span>
+                                    <strong id="config-learning-rate">—</strong>
+                                </div>
+
+                                <div>
+                                    <span>Max length</span>
+                                    <strong id="config-max-length">—</strong>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        id="translate-button"
+                        class="primary-button"
+                    >
+                        Translate
+                    </button>
+
+
+                </div>
+
+
+                <div
+                    id="translation-message"
+                    class="message"
+                ></div>
+
+            </div>
+
+
+
+            <!-- ============================================== -->
+            <!-- Translation animation                          -->
+            <!-- ============================================== -->
+
+            <div
+                id="translation-animation"
+                class="panel translation-animation"
+            >
+
+
+                <!-- English input -->
+
+                <div class="translation-stage">
+
+                    <div class="stage-title">
+                        English input
+                    </div>
+
+                    <div
+                        id="english-display"
+                        class="sentence-display"
+                    >
+                        —
+                    </div>
+
+                </div>
+
+
+                <div class="vertical-arrow">
+                    ↓
+                </div>
+                
+                <!-- Model prompt -->
+
+                <div class="translation-stage">
+
+                    <div class="stage-title">
+                        Model Input / Task Prompt
+                    </div>
+
+                    <div
+                        id="prompt-display"
+                        class="sentence-display prompt-display"
+                    >
+                        —
+                    </div>
+
+                </div>
+
+
+                <div class="vertical-arrow">
+                    ↓
+                </div>
+
+                <!-- Tokenizer -->
+
+                <div
+                    id="tokenizer-stage"
+                    class="translation-stage"
+                >
+
+                    <div class="stage-title">
+                        SentencePiece tokenizer
+                    </div>
+
+                    <div
+                        id="input-tokens"
+                        class="token-container"
+                    ></div>
+
+                </div>
+
+
+                <div class="vertical-arrow">
+                    ↓
+                </div>
+                
+
+                <!-- Embeddings -->
+
+                <div
+                    id="embedding-stage"
+                    class="translation-stage"
+                >
+
+                    <div class="stage-title">
+                        Input Embeddings
+                    </div>
+
+                    <div
+                        id="embedding-dimension"
+                        class="vector-dimension"
+                    >
+                    </div>
+
+                    <div
+                        id="embedding-vectors"
+                        class="vector-container"
+                    >
+                    </div>
+
+                </div>
+
+
+                <div class="vertical-arrow">
+                    ↓
+                </div>
+
+                <!-- Encoder -->
+
+                <div
+                    id="encoder-stage"
+                    class="transformer-block encoder"
+                >
+
+                    <span class="block-label">
+                        Transformer Encoder
+                    </span>
+
+                    <span class="block-description">
+                        Builds contextual representations
+                        of the English tokens
+                    </span>
+
+                </div>
+
+
+                <div class="vertical-arrow">
+                    ↓
+                </div>
+
+
+                <!-- Encoded representation -->
+
+                <div
+                    id="representation-stage"
+                    class="translation-stage"
+                >
+
+                    <div class="stage-title">
+                        Contextual Representations
+                    </div>
+
+                    <div class="vector-dimension">
+                        Same sequence length, but each representation
+                        now incorporates information from the context.
+                    </div>
+
+                    <div
+                        id="contextual-vectors"
+                        class="vector-container"
+                    >
+                    </div>
+
+                </div>
+
+
+                <div class="vertical-arrow">
+                    ↓
+                </div>
+
+
+                <!-- Decoder -->
+
+                <div
+                    id="decoder-stage"
+                    class="transformer-block decoder"
+                >
+
+                    <span class="block-label">
+                        Transformer Decoder
+                    </span>
+
+                    <span class="block-description">
+                        Predicts the next Quenya token
+                        autoregressively
+                    </span>
+
+                </div>
+
+
+                <div class="vertical-arrow">
+                    ↓
+                </div>
+
+
+                <!-- Generated tokens -->
+
+                <div class="translation-stage">
+
+                    <div class="stage-title">
+                        Generated tokens
+                    </div>
+
+                    <div
+                        id="output-tokens"
+                        class="token-container output"
+                    ></div>
+
+                </div>
+
+
+                <div class="vertical-arrow">
+                    ↓
+                </div>
+
+
+                <!-- Final translation -->
+
+                <div class="translation-stage final-stage">
+
+                    <div class="stage-title">
+                        Quenya translation
+                    </div>
+
+                    <div
+                        id="translation-output"
+                        class="sentence-display translation-result"
+                    >
+                        —
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ================================================== -->
+    <!-- Footer                                             -->
+    <!-- ================================================== -->
+
+    <footer>
+
+        <span>
+            Advanced Deep Learning · Transformer Fine-Tuning
+        </span>
+
+    </footer>
+
+
+    <script
+        src="{{ url_for('static', filename='app.js') }}"
+    ></script>
+
+</body>
+
+</html>
