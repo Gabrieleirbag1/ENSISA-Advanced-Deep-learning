@@ -1,11 +1,3 @@
-"""
-PhotoMap pipeline.
-
-Section 3 (représentations) : implémentée (DINOv2 ou ResNet-18).
-Sections 4, 5, 6 (projection, voisins, groupes) : placeholders aléatoires
-conservés pour que l'application continue de fonctionner.
-"""
-
 from pathlib import Path
 import random
 
@@ -24,11 +16,6 @@ MODEL_NAME = "dinov2"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 _ENCODERS = {}  # cache mémoire : nom -> (encodeur, preprocess, dimension)
-
-
-# ---------------------------------------------------------------------------
-# Collection de photos
-# ---------------------------------------------------------------------------
 
 def get_photos(photo_dir):
     """Return the images available in the real photo collection."""
