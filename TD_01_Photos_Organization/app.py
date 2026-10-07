@@ -12,7 +12,7 @@ from pipeline import (
 
 app = Flask(__name__)
 
-PHOTO_DIR = Path("data/photos")
+PHOTO_DIR = Path("data/politiciens_fr")
 
 
 @app.route("/")
