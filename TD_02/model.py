@@ -92,16 +92,15 @@ def load_pretrained_model():
 
     # TODO 1
     # Load the tokenizer corresponding to PRETRAINED_MODEL.
-
-    tokenizer = None
+    tokenizer = AutoTokenizer.from_pretrained(PRETRAINED_MODEL)
 
     # TODO 2
     # Load the pretrained sequence-to-sequence model.
-
-    model = None
+    model = AutoModelForSeq2SeqLM.from_pretrained(PRETRAINED_MODEL)
 
     # TODO 3
     # Move the model to DEVICE.
+    model = model.to(DEVICE)
 
     return tokenizer, model
 
