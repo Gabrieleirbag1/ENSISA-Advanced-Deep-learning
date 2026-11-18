@@ -1,0 +1,1764 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>RAG Visual Lab</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>RAG Visual Lab</h1>
+    <p>
+        Build a local chatbot and inspect every step
+        of retrieval-augmented generation.
+    </p>
+</header>
+
+<main>
+
+    <!-- =====================================================
+         1. DOCUMENT EXPLORER
+         ===================================================== -->
+
+    <section class="card document-explorer">
+
+        <div class="panel-heading">
+            <h2>1 · Document Explorer</h2>
+
+            <button
+                id="remove-pdf"
+                class="danger-button"
+                type="button"
+            >
+                Remove PDF
+            </button>
+        </div>
+
+        <!-- TAB NAVIGATION -->
+
+        <div
+            class="explorer-tabs"
+            role="tablist"
+            aria-label="Document explorer"
+        >
+
+            <button
+                class="explorer-tab active"
+                type="button"
+                data-tab="document"
+                role="tab"
+                aria-selected="true"
+                aria-controls="tab-document"
+            >
+                <span class="tab-icon">📄</span>
+                <span>Document</span>
+            </button>
+
+            <button
+                class="explorer-tab"
+                type="button"
+                data-tab="chunks"
+                role="tab"
+                aria-selected="false"
+                aria-controls="tab-chunks"
+                tabindex="-1"
+            >
+                <span class="tab-icon">🧩</span>
+                <span>Chunks</span>
+            </button>
+
+            <button
+                class="explorer-tab"
+                type="button"
+                data-tab="embeddings"
+                role="tab"
+                aria-selected="false"
+                aria-controls="tab-embeddings"
+                tabindex="-1"
+            >
+                <span class="tab-icon">🔢</span>
+                <span>Vectors</span>
+            </button>
+
+            <button
+                class="explorer-tab"
+                type="button"
+                data-tab="pca"
+                role="tab"
+                aria-selected="false"
+                aria-controls="tab-pca"
+                tabindex="-1"
+            >
+                <span class="tab-icon">📊</span>
+                <span>PCA</span>
+            </button>
+
+        </div>
+
+
+        <!-- =================================================
+             TAB 1 — DOCUMENT
+             ================================================= -->
+
+        <div
+            id="tab-document"
+            class="explorer-panel active"
+            role="tabpanel"
+        >
+
+            <div class="explorer-section-heading">
+                <h3>Upload a document</h3>
+
+                <p class="hint">
+                    Select a text-based PDF to extract
+                    its content.
+                </p>
+            </div>
+
+            <div class="upload-area">
+
+                <input
+                    id="pdf"
+                    type="file"
+                    accept="application/pdf"
+                >
+
+                <button id="upload" type="button">
+                    Extract PDF
+                </button>
+
+            </div>
+
+            <div id="docstats" class="stats"></div>
+
+            <div class="document-info">
+
+                <h3>Document information</h3>
+
+                <pre id="docinfo">Upload a text-based PDF to begin.</pre>
+
+            </div>
+
+            <details
+                id="pages-details"
+                class="pages-inspector"
+            >
+
+                <summary>
+                    Inspect extracted pages
+                </summary>
+
+                <div
+                    id="pages"
+                    class="scroll document-pages"
+                ></div>
+
+            </details>
+
+        </div>
+
+
+        <!-- =================================================
+             TAB 2 — CHUNKS
+             ================================================= -->
+
+        <div
+            id="tab-chunks"
+            class="explorer-panel"
+            role="tabpanel"
+            hidden
+        >
+
+            <div class="explorer-section-heading">
+
+                <h3>Text chunking</h3>
+
+                <p class="hint">
+                    Split the extracted document into
+                    overlapping text segments.
+                </p>
+
+            </div>
+
+            <div class="controls chunk-controls">
+
+                <label>
+                    Chunk size
+
+                    <input
+                        id="size"
+                        type="number"
+                        value="500"
+                        min="50"
+                    >
+                </label>
+
+                <label>
+                    Overlap
+
+                    <input
+                        id="overlap"
+                        type="number"
+                        value="100"
+                        min="0"
+                    >
+                </label>
+
+            </div>
+
+            <button id="chunk" type="button">
+                Create chunks
+            </button>
+
+            <div id="chunkstats" class="stats"></div>
+
+            <!-- REAL-TIME CHUNK SEARCH -->
+
+            <div class="chunk-search-section">
+
+                <div class="chunk-search-heading">
+
+                    <h3>Explore chunks</h3>
+
+                    <span
+                        id="chunk-search-count"
+                        class="hint"
+                        aria-live="polite"
+                    ></span>
+
+                </div>
+
+                <div class="chunk-search-wrapper">
+
+                    <span
+                        class="search-icon"
+                        aria-hidden="true"
+                    >
+                        🔍
+                    </span>
+
+                    <input
+                        id="chunk-search"
+                        type="search"
+                        placeholder="Search inside chunks..."
+                        aria-label="Search chunks"
+                        autocomplete="off"
+                        disabled
+                    >
+
+                </div>
+
+                <p class="hint">
+                    Search by keyword to filter chunks
+                    instantly. Matching text will be
+                    highlighted.
+                </p>
+
+            </div>
+
+            <div
+                id="chunks"
+                class="scroll chunk-list"
+            ></div>
+
+            <div
+                id="chunkdetail"
+                class="chunkdetail"
+                hidden
+            ></div>
+
+        </div>
+
+
+        <!-- =================================================
+             TAB 3 — EMBEDDINGS
+             ================================================= -->
+
+        <div
+            id="tab-embeddings"
+            class="explorer-panel"
+            role="tabpanel"
+            hidden
+        >
+
+            <div class="explorer-section-heading">
+
+                <h3>Vector embeddings</h3>
+
+                <p class="hint">
+                    Transform each text chunk into
+                    a numerical representation.
+                </p>
+
+            </div>
+
+            <!-- EMBEDDING MODEL CARD -->
+
+            <div class="model-card embedding-model-card">
+
+                <div class="model-card-header">
+
+                    <div class="model-icon">
+                        🧠
+                    </div>
+
+                    <div class="model-heading">
+
+                        <span class="model-type">
+                            EMBEDDING MODEL
+                        </span>
+
+                        <h3 id="embedding-model-name">
+                            all-MiniLM-L6-v2
+                        </h3>
+
+                    </div>
+
+                </div>
+
+                <div class="model-specs">
+
+                    <div class="model-spec">
+                        <span>Architecture</span>
+                        <strong>Sentence Transformer</strong>
+                    </div>
+
+                    <div class="model-spec">
+                        <span>Dimensions</span>
+                        <strong id="embedding-dimension">
+                            384
+                        </strong>
+                    </div>
+
+                    <div class="model-spec">
+                        <span>Execution</span>
+                        <strong>Local</strong>
+                    </div>
+
+                    <div class="model-spec">
+                        <span>Role</span>
+                        <strong>Semantic retrieval</strong>
+                    </div>
+
+                </div>
+
+                <p class="model-description">
+                    Converts document chunks and questions
+                    into numerical vectors. Similarity
+                    between these vectors is used to
+                    retrieve relevant passages.
+                </p>
+
+            </div>
+
+            <!-- VECTORIZE BUTTON -->
+
+            <button id="vectorize" type="button">
+                Generate embeddings
+            </button>
+
+            <!-- EMBEDDING INFORMATION -->
+
+            <div class="embedding-information">
+
+                <h3>Embedding information</h3>
+
+                <div class="embedding-placeholder">
+
+                    <p
+                        id="embedding-status"
+                        class="hint"
+                    >
+                        Generate embeddings to inspect
+                        their numerical representation.
+                    </p>
+
+                    <div
+                        id="embedding-stats"
+                        class="stats"
+                    ></div>
+
+                </div>
+
+            </div>
+
+            <div class="info-box">
+
+                <div class="info-box-title">
+                    Full-dimensional retrieval
+                </div>
+
+                <p>
+                    Similarity search uses the complete
+                    embedding vectors, not their
+                    two-dimensional projections.
+                </p>
+
+                <p>
+                    PCA is used only to visualize
+                    relationships between chunks.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             TAB 4 — PCA VISUALIZATION
+             ================================================= -->
+
+        <div
+            id="tab-pca"
+            class="explorer-panel"
+            role="tabpanel"
+            hidden
+        >
+
+            <div class="explorer-section-heading">
+
+                <h3>Embedding space</h3>
+
+                <p class="hint">
+                    Explore the relationships between
+                    document chunks in two dimensions.
+                </p>
+
+            </div>
+
+            <div class="info-box">
+
+                <div class="info-box-title">
+                    Principal Component Analysis
+                </div>
+
+                <p>
+                    PCA projects high-dimensional
+                    embeddings into a 2D space.
+                </p>
+
+                <p>
+                    Nearby points may represent
+                    semantically similar chunks.
+                </p>
+
+            </div>
+
+            <div class="pca-container">
+
+                <div class="pca-heading">
+
+                    <h3>2D projection</h3>
+
+                    <span class="pca-badge">
+                        PCA
+                    </span>
+
+                </div>
+
+                <div id="plot"></div>
+
+            </div>
+
+            <!-- ANIMATED VECTOR SEARCH: available after retrieval -->
+
+            <section
+                id="vector-search-section"
+                class="vector-search-section"
+                aria-labelledby="vector-search-title"
+            >
+
+                <div class="vector-search-heading">
+                    <div>
+                        <h3 id="vector-search-title">Animated vector search</h3>
+                        <p class="hint">
+                            Replay how the query is compared with document
+                            chunks using cosine similarity in the original
+                            embedding space.
+                        </p>
+                    </div>
+                    <span id="vector-search-state" class="pca-badge" role="status">
+                        Waiting for a question
+                    </span>
+                </div>
+
+                <div class="vector-search-query">
+                    <span class="model-type">EMBEDDED SEARCH QUERY</span>
+                    <p id="vector-search-query-text" class="hint">
+                        Ask a question to see its query embedding here.
+                    </p>
+                </div>
+
+                <div class="vector-search-toolbar" role="group" aria-label="Vector search animation controls">
+                    <button id="search-play" type="button" disabled title="Ask a question first">
+                        ▶ Play search
+                    </button>
+                    <button id="search-pause" class="secondary-button" type="button" disabled>
+                        ⏸ Pause
+                    </button>
+                    <button id="search-next" class="secondary-button" type="button" disabled>
+                        ⏭ Next
+                    </button>
+                    <button id="search-replay" class="secondary-button" type="button" disabled>
+                        ↺ Replay
+                    </button>
+                    <label for="search-speed">
+                        Speed
+                        <select id="search-speed" disabled>
+                            <option value="slow">Slow</option>
+                            <option value="normal" selected>Normal</option>
+                            <option value="fast">Fast</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="vector-search-progress">
+                    <div class="vector-search-progress-labels">
+                        <span id="search-progress-text" role="status" aria-live="polite">
+                            No search to replay yet.
+                        </span>
+                        <span id="search-progress-count">0 / 0</span>
+                    </div>
+                    <progress id="search-progress" value="0" max="1"></progress>
+                </div>
+
+                <div class="vector-search-comparison" id="search-comparison" hidden>
+                    <span class="model-type">CURRENT COMPARISON</span>
+                    <div class="vector-search-comparison-values">
+                        <strong id="search-current-chunk">Chunk —</strong>
+                        <span id="search-current-score">Cosine similarity: —</span>
+                    </div>
+                </div>
+
+                <div class="vector-search-ranking">
+                    <div class="vector-search-ranking-heading">
+                        <h3>Live similarity ranking</h3>
+                        <span class="hint" id="search-ranking-caption">
+                            Highest-scoring chunks examined so far
+                        </span>
+                    </div>
+                    <div id="search-ranking" aria-live="off">
+                        <p class="hint">The ranking will appear during playback.</p>
+                    </div>
+                </div>
+
+                <div class="info-box vector-search-note">
+                    <div class="info-box-title">What do the lines mean?</div>
+                    <p>
+                        Lines on the PCA plot show which chunk is being
+                        compared with the query. They do <strong>not</strong>
+                        represent the distance used for retrieval.
+                        Similarities and top-k ranks are calculated from
+                        the original embedding vectors, not from 2D PCA.
+                    </p>
+                </div>
+
+            </section>
+
+            <!-- =====================================================
+                PASS 5 — PCA VS. ACTUAL SIMILARITY
+                ===================================================== -->
+
+            <section
+                id="ranking-comparison-section"
+                class="ranking-comparison-section"
+                aria-labelledby="ranking-comparison-title"
+            >
+
+                <!-- SECTION HEADING -->
+
+                <div class="ranking-comparison-heading">
+
+                    <div>
+                        <h3 id="ranking-comparison-title">
+                            PCA vs. Actual Similarity
+                        </h3>
+
+                        <p class="hint">
+                            Does the 2D visualization preserve the
+                            nearest neighbors found in the original
+                            embedding space?
+                        </p>
+                    </div>
+
+                    <span
+                        id="ranking-comparison-state"
+                        class="pca-badge"
+                    >
+                        Waiting for a question
+                    </span>
+
+                </div>
+
+
+                <!-- EXPLANATION -->
+
+                <div class="info-box">
+
+                    <div class="info-box-title">
+                        Same query, different rankings
+                    </div>
+
+                    <p>
+                        The RAG system retrieves chunks using
+                        <strong>cosine similarity in 384 dimensions</strong>.
+                        However, the PCA plot shows only two dimensions.
+                    </p>
+
+                    <p>
+                        We can compare which chunks are nearest to the
+                        query using different representations and
+                        distance metrics.
+                    </p>
+
+                </div>
+
+
+                <!-- COMPARISON CONTROLS -->
+
+                <div class="ranking-comparison-controls">
+
+                    <label for="comparison-mode">
+                        Compare actual retrieval against
+                    </label>
+
+                    <select
+                        id="comparison-mode"
+                        disabled
+                    >
+                        <option value="pca_euclidean" selected>
+                            2D PCA — Euclidean distance
+                        </option>
+
+                        <option value="pca_cosine">
+                            2D PCA — Cosine similarity
+                        </option>
+                    </select>
+
+                </div>
+
+
+                <!-- OVERLAP STATISTICS -->
+
+                <div class="ranking-comparison-stats">
+
+                    <div class="comparison-stat">
+
+                        <span class="comparison-stat-label">
+                            TOP-K
+                        </span>
+
+                        <strong id="comparison-k">
+                            —
+                        </strong>
+
+                    </div>
+
+                    <div class="comparison-stat">
+
+                        <span class="comparison-stat-label">
+                            SHARED CHUNKS
+                        </span>
+
+                        <strong id="comparison-shared">
+                            —
+                        </strong>
+
+                    </div>
+
+                    <div class="comparison-stat comparison-overlap-stat">
+
+                        <span class="comparison-stat-label">
+                            OVERLAP@K
+                        </span>
+
+                        <strong id="comparison-overlap">
+                            —
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- VISUALIZATION TOGGLE -->
+
+                <div class="ranking-comparison-visualization">
+
+                    <div class="ranking-comparison-visualization-heading">
+
+                        <h3>
+                            Highlight on PCA
+                        </h3>
+
+                        <span class="hint">
+                            Select which neighbors to display
+                        </span>
+
+                    </div>
+
+                    <div
+                        class="comparison-view-buttons"
+                        role="group"
+                        aria-label="PCA ranking visualization"
+                    >
+
+                        <button
+                            id="comparison-show-original"
+                            class="secondary-button"
+                            type="button"
+                            disabled
+                        >
+                            Actual 384D
+                        </button>
+
+                        <button
+                            id="comparison-show-projected"
+                            class="secondary-button"
+                            type="button"
+                            disabled
+                        >
+                            Projected 2D
+                        </button>
+
+                        <button
+                            id="comparison-show-both"
+                            class="secondary-button"
+                            type="button"
+                            disabled
+                        >
+                            Show both
+                        </button>
+
+                    </div>
+
+                    <!-- COLOR LEGEND -->
+
+                    <div class="comparison-legend">
+
+                        <span class="comparison-legend-item">
+
+                            <span
+                                class="comparison-legend-dot original"
+                            ></span>
+
+                            Actual retrieval only
+
+                        </span>
+
+                        <span class="comparison-legend-item">
+
+                            <span
+                                class="comparison-legend-dot projected"
+                            ></span>
+
+                            PCA neighbors only
+
+                        </span>
+
+                        <span class="comparison-legend-item">
+
+                            <span
+                                class="comparison-legend-dot shared"
+                            ></span>
+
+                            Shared by both
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SIDE-BY-SIDE RANKINGS -->
+
+                <div class="ranking-comparison-grid">
+
+                    <!-- ORIGINAL EMBEDDING SPACE -->
+
+                    <div class="comparison-ranking-card">
+
+                        <div class="comparison-ranking-header">
+
+                            <span class="model-type">
+                                ACTUAL RAG RETRIEVAL
+                            </span>
+
+                            <h3>
+                                384D Cosine
+                            </h3>
+
+                            <p class="hint">
+                                Ranked using the original
+                                embedding vectors.
+                            </p>
+
+                        </div>
+
+                        <div
+                            id="comparison-original-ranking"
+                            class="comparison-ranking-list"
+                        >
+
+                            <p class="hint">
+                                Ask a question to see the ranking.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PROJECTED EMBEDDING SPACE -->
+
+                    <div class="comparison-ranking-card">
+
+                        <div class="comparison-ranking-header">
+
+                            <span class="model-type">
+                                PCA PROJECTION
+                            </span>
+
+                            <h3 id="comparison-projected-title">
+                                2D Euclidean
+                            </h3>
+
+                            <p
+                                id="comparison-projected-description"
+                                class="hint"
+                            >
+                                Ranked by Euclidean distance
+                                in the 2D PCA projection.
+                            </p>
+
+                        </div>
+
+                        <div
+                            id="comparison-projected-ranking"
+                            class="comparison-ranking-list"
+                        >
+
+                            <p class="hint">
+                                Ask a question to see the ranking.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- EDUCATIONAL INTERPRETATION -->
+
+                <div
+                    id="comparison-interpretation"
+                    class="comparison-interpretation"
+                    hidden
+                >
+
+                    <div class="info-box-title">
+                        What can we conclude?
+                    </div>
+
+                    <p id="comparison-interpretation-text"></p>
+
+                </div>
+
+
+                <!-- IMPORTANT DISTINCTION -->
+
+                <div class="info-box ranking-comparison-note">
+
+                    <div class="info-box-title">
+                        Why can the rankings differ?
+                    </div>
+
+                    <p>
+                        <strong>Dimensionality reduction:</strong>
+                        PCA retains only two principal components,
+                        discarding information from the remaining
+                        dimensions.
+                    </p>
+
+                    <p>
+                        <strong>Similarity metric:</strong>
+                        Euclidean distance measures geometric
+                        proximity, whereas cosine similarity
+                        measures the angle between vectors.
+                    </p>
+
+                    <p>
+                        <strong>Important:</strong>
+                        PCA centers embeddings before projection.
+                        Consequently, comparing cosine similarities
+                        before and after PCA also involves a change
+                        of origin.
+                    </p>
+
+                    <p>
+                        The actual RAG retrieval always uses the
+                        original 384-dimensional embeddings.
+                    </p>
+
+                </div>
+
+            </section>
+
+            <p class="hint">
+                Each point represents a document chunk.
+                The projection is illustrative and does
+                not replace full-dimensional similarity.
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         2. RETRIEVAL PIPELINE
+         ===================================================== -->
+
+    <section class="card retrieval-panel">
+
+        <div class="panel-heading">
+
+            <h2>2 · Retrieval Pipeline</h2>
+
+            <span class="pipeline-badge">
+                RAG
+            </span>
+
+        </div>
+
+        <!-- PIPELINE STAGES -->
+
+        <div class="retrieval-section">
+
+            <div class="retrieval-section-heading">
+
+                <h3>Processing stages</h3>
+
+                <span class="section-caption">
+                    Step-by-step execution
+                </span>
+
+            </div>
+
+            <div id="stages">
+
+                <div>PDF extraction</div>
+                <div>Chunking</div>
+                <div>Vectorization</div>
+                <div>Query embedding</div>
+                <div>Similarity search</div>
+                <div>Top-k context</div>
+                <div>LLM generation</div>
+
+            </div>
+
+        </div>
+
+
+        <!-- RETRIEVED PASSAGES -->
+
+        <div class="retrieval-section">
+
+            <div class="retrieval-section-heading">
+
+                <div>
+                    <h3>Retrieved passages</h3>
+
+                    <p class="hint">
+                        Ranked by cosine similarity
+                        with the query embedding.
+                    </p>
+                </div>
+
+                <span
+                    id="retrieval-count"
+                    class="retrieval-count"
+                >
+                    0 retrieved
+                </span>
+
+            </div>
+
+            <div
+                id="results"
+                class="scroll retrieval-results"
+            >
+
+                <div class="retrieval-empty">
+
+                    <div class="empty-icon">
+                        🔎
+                    </div>
+
+                    <p>
+                        No passages retrieved yet.
+                    </p>
+
+                    <span class="hint">
+                        Ask a question to start
+                        semantic retrieval.
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- SELECTED RETRIEVED PASSAGE -->
+
+            <div
+                id="retrieval-detail"
+                class="retrieval-detail"
+                hidden
+            ></div>
+
+        </div>
+
+
+        <!-- PROMPT INSPECTOR -->
+
+        <div class="retrieval-section">
+
+            <details
+                id="prompt-details"
+                class="prompt-inspector"
+            >
+
+                <summary>
+
+                    <span class="prompt-summary-title">
+                        📝 Prompt sent to the LLM
+                    </span>
+
+                    <span class="hint">
+                        Inspect
+                    </span>
+
+                </summary>
+
+                <div class="prompt-content">
+
+                    <p class="hint">
+                        This is the exact prompt
+                        constructed from the question,
+                        retrieved context, and
+                        conversation history.
+                    </p>
+
+                    <pre id="prompt">Waiting for retrieval…</pre>
+
+                    <button
+                        id="copy-prompt"
+                        class="secondary-button"
+                        type="button"
+                    >
+                        Copy prompt
+                    </button>
+
+                </div>
+
+            </details>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         3. CHATBOT
+         ===================================================== -->
+
+    <section class="card chatbot-panel">
+
+        <div class="panel-heading">
+
+            <h2>3 · Chatbot</h2>
+
+            <button
+                id="clear-chat"
+                class="secondary-button"
+                type="button"
+            >
+                Clear Chat
+            </button>
+
+        </div>
+
+
+        <!-- LLM MODEL INFORMATION -->
+
+        <details
+            id="llm-model-details"
+            class="llm-model-details"
+        >
+
+            <summary class="llm-model-badge">
+
+                <span
+                    class="model-status-dot"
+                    aria-hidden="true"
+                ></span>
+
+                <span class="llm-model-label">
+
+                    <strong id="llm-model-name">
+                        Qwen2.5-0.5B-Instruct
+                    </strong>
+
+                    <span class="llm-model-meta">
+                        0.5B · Local CPU
+                    </span>
+
+                </span>
+
+                <span
+                    class="model-expand-icon"
+                    aria-hidden="true"
+                >
+                    ⌄
+                </span>
+
+            </summary>
+
+            <div class="llm-model-content">
+
+                <div class="model-specs">
+
+                    <div class="model-spec">
+                        <span>Architecture</span>
+                        <strong>
+                            Decoder-only Transformer
+                        </strong>
+                    </div>
+
+                    <div class="model-spec">
+                        <span>Parameters</span>
+                        <strong>~0.5 billion</strong>
+                    </div>
+
+                    <div class="model-spec">
+                        <span>Runtime</span>
+                        <strong>llama.cpp</strong>
+                    </div>
+
+                    <div class="model-spec">
+                        <span>Execution</span>
+                        <strong>Local CPU</strong>
+                    </div>
+
+                </div>
+
+                <p class="model-description">
+                    Generates answers using the retrieved
+                    document passages and previous
+                    conversation exchanges.
+                </p>
+
+                <p class="hint">
+                    The language model is separate
+                    from the embedding model used
+                    for retrieval.
+                </p>
+
+            </div>
+
+        </details>
+
+        <!-- PASS 7 — TOKEN GENERATION MODAL TRIGGER -->
+        <div class="token-modal-trigger">
+            <button id="open-token-modal" class="secondary-button" type="button"
+                    aria-haspopup="dialog" aria-controls="token-modal">
+                🔤 Visualize Token Generation
+            </button>
+            <p class="hint">Replay how the LLM generated its latest answer.</p>
+        </div>
+
+        <!-- CHAT CONVERSATION -->
+
+        <div id="chat-tab-panel" class="chatbot-conversation">
+
+        <!-- CHAT MESSAGES -->
+
+        <div
+            id="messages"
+            class="scroll chat-messages"
+            role="log"
+            aria-live="polite"
+            aria-label="Chat conversation"
+        >
+
+            <div class="chat-empty-state">
+
+                <div class="chat-empty-icon">
+                    💬
+                </div>
+
+                <h3>Ask your document</h3>
+
+                <p class="hint">
+                    Upload a PDF, generate its embeddings,
+                    and ask questions about its content.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- TYPING INDICATOR -->
+
+        <div
+            id="typing-indicator"
+            class="typing-indicator"
+            role="status"
+            aria-live="polite"
+            hidden
+        >
+
+            <span class="typing-avatar">
+                AI
+            </span>
+
+            <div class="typing-content">
+
+                <span>Generating response</span>
+
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- CLOSE CHAT TAB -->
+
+</div>
+
+
+        <!-- QUESTION INPUT -->
+
+        <div class="chat-composer">
+
+            <label for="question">
+                Your question
+            </label>
+
+            <textarea
+                id="question"
+                rows="3"
+                placeholder="Ask something about your document..."
+            ></textarea>
+
+            <!-- PASS 7 — COLLAPSIBLE GENERATION SETTINGS -->
+            <details id="chat-settings-details" class="chat-settings-details">
+                <summary>
+                    <span>⚙️ Generation Settings</span>
+                    <span id="chat-settings-summary" class="chat-settings-summary">
+                        Top-k: 3 · Temp: 0.2 · History: 2
+                    </span>
+                </summary>
+                <div class="controls chat-settings">
+
+                <label>
+                    Top-k
+
+                    <input
+                        id="topk"
+                        type="number"
+                        min="1"
+                        max="20"
+                        value="3"
+                    >
+                </label>
+
+                <label>
+                    Temperature
+
+                    <input
+                        id="temperature"
+                        type="number"
+                        min="0"
+                        max="2"
+                        step="0.1"
+                        value="0.2"
+                    >
+                </label>
+
+                <label>
+                    History length
+
+                    <input
+                        id="history-length"
+                        type="number"
+                        min="0"
+                        max="5"
+                        step="1"
+                        value="2"
+                        title="Number of previous conversation exchanges sent to the LLM"
+                    >
+                </label>
+
+                </div>
+            </details>
+
+            <button id="ask" type="button">
+                Ask with RAG
+            </button>
+
+        </div>
+
+
+        <!-- GENERATION STATISTICS -->
+
+        <div
+            id="generation-stats"
+            class="generation-stats"
+            hidden
+        >
+
+            <span id="generation-time"></span>
+
+            <span id="generation-history"></span>
+
+        </div>
+
+
+        <!-- APPLICATION STATUS -->
+
+        <p
+            id="status"
+            aria-live="polite"
+        ></p>
+
+    </section>
+
+</main>
+
+<!-- =====================================================
+     PASS 7 — TOKEN GENERATION MODAL
+     ===================================================== -->
+<div id="token-modal" class="token-modal" hidden>
+    <div id="token-modal-backdrop" class="token-modal-backdrop"></div>
+    <section class="token-modal-dialog" role="dialog" aria-modal="true"
+             aria-labelledby="token-modal-title" tabindex="-1">
+        <div class="token-modal-header">
+            <div>
+                <span class="model-type">LLM VISUALIZATION</span>
+                <h2 id="token-modal-title">🔤 Token Generation</h2>
+                <p class="hint">Explore autoregressive text generation step by step.</p>
+            </div>
+            <button id="close-token-modal" class="secondary-button token-modal-close"
+                    type="button" aria-label="Close token generation visualization">✕</button>
+        </div>
+        <div class="token-modal-body">
+<!-- =====================================================
+     PASS 6 — TOKEN GENERATION TAB
+     ===================================================== -->
+
+<div id="tokens-tab-panel" class="token-generation-panel">
+
+    <!-- SECTION HEADING -->
+
+    <div class="token-generation-heading">
+
+        <div>
+            <h3>Autoregressive Generation</h3>
+
+            <p class="hint">
+                Explore how the language model generates
+                its answer one token at a time.
+            </p>
+        </div>
+
+        <span
+            id="token-generation-state"
+            class="pca-badge"
+        >
+            Waiting for an answer
+        </span>
+
+    </div>
+
+
+    <!-- EDUCATIONAL EXPLANATION -->
+
+    <div class="info-box">
+
+        <div class="info-box-title">
+            How does an LLM generate text?
+        </div>
+
+        <p>
+            At each step, the model predicts a probability
+            distribution over possible next tokens.
+        </p>
+
+        <p>
+            One token is selected and appended to the
+            sequence. The process repeats until generation
+            stops.
+        </p>
+
+    </div>
+
+
+    <!-- GENERATION INFORMATION -->
+
+    <div class="token-generation-stats">
+
+        <div class="token-stat">
+
+            <span class="token-stat-label">
+                GENERATED TOKENS
+            </span>
+
+            <strong id="token-total">
+                —
+            </strong>
+
+        </div>
+
+        <div class="token-stat">
+
+            <span class="token-stat-label">
+                CURRENT STEP
+            </span>
+
+            <strong id="token-current-step">
+                —
+            </strong>
+
+        </div>
+
+        <div class="token-stat">
+
+            <span class="token-stat-label">
+                GENERATION TEMPERATURE
+            </span>
+
+            <strong id="token-original-temperature">
+                —
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- ANIMATION CONTROLS -->
+
+    <div
+        class="token-generation-toolbar"
+        role="group"
+        aria-label="Token generation playback"
+    >
+
+        <button
+            id="token-play"
+            type="button"
+            disabled
+        >
+            ▶ Play
+        </button>
+
+        <button
+            id="token-pause"
+            class="secondary-button"
+            type="button"
+            disabled
+        >
+            ⏸ Pause
+        </button>
+
+        <button
+            id="token-next"
+            class="secondary-button"
+            type="button"
+            disabled
+        >
+            ⏭ Next
+        </button>
+
+        <button
+            id="token-replay"
+            class="secondary-button"
+            type="button"
+            disabled
+        >
+            ↺ Replay
+        </button>
+
+        <label for="token-speed">
+            Speed
+
+            <select
+                id="token-speed"
+                disabled
+            >
+                <option value="slow">
+                    Slow
+                </option>
+
+                <option value="normal" selected>
+                    Normal
+                </option>
+
+                <option value="fast">
+                    Fast
+                </option>
+
+            </select>
+        </label>
+
+    </div>
+
+
+    <!-- GENERATION PROGRESS -->
+
+    <div class="token-generation-progress">
+
+        <div class="token-generation-progress-labels">
+
+            <span id="token-progress-text">
+                No generation to replay yet.
+            </span>
+
+            <span id="token-progress-count">
+                0 / 0
+            </span>
+
+        </div>
+
+        <progress
+            id="token-progress"
+            value="0"
+            max="1"
+        ></progress>
+
+    </div>
+
+
+    <!-- GENERATED TEXT -->
+
+    <div class="token-output-section">
+
+        <div class="token-section-heading">
+
+            <h3>Generated sequence</h3>
+
+            <span class="hint">
+                Each highlighted element is one token
+            </span>
+
+        </div>
+
+        <div
+            id="token-output"
+            class="token-output"
+            aria-live="off"
+        >
+
+            <p class="hint">
+                Generate an answer to inspect its tokens.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- NEXT-TOKEN PROBABILITIES -->
+
+    <div class="token-probabilities-section">
+
+        <div class="token-section-heading">
+
+            <h3>Next-token probabilities</h3>
+
+            <span class="hint">
+                Top 5 candidates
+            </span>
+
+        </div>
+
+        <div
+            id="token-probabilities"
+            class="token-probabilities"
+        >
+
+            <p class="hint">
+                Select a generation step to inspect
+                its candidate tokens.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- TEMPERATURE EXPLORER -->
+
+    <div class="token-temperature-section">
+
+        <div class="token-section-heading">
+
+            <h3>Temperature Explorer</h3>
+
+            <span class="hint">
+                Experiment with the distribution
+            </span>
+
+        </div>
+
+        <div class="token-temperature-controls">
+
+            <label for="token-temperature-slider">
+                Visualization temperature
+            </label>
+
+            <div class="token-temperature-slider-row">
+
+                <input
+                    id="token-temperature-slider"
+                    type="range"
+                    min="0.1"
+                    max="2"
+                    step="0.1"
+                    value="1"
+                    disabled
+                >
+
+                <strong id="token-temperature-value">
+                    1.0
+                </strong>
+
+            </div>
+
+        </div>
+
+        <div class="info-box">
+
+            <div class="info-box-title">
+                What does temperature change?
+            </div>
+
+            <p>
+                Lower temperatures make the distribution
+                sharper. Higher temperatures make it flatter.
+            </p>
+
+            <p>
+                This visualization compares the recorded
+                top candidates. It does not regenerate
+                the model's answer.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- SELECTED TOKEN INFORMATION -->
+
+    <div
+        id="token-inspector"
+        class="token-inspector"
+        hidden
+    >
+
+        <div class="token-section-heading">
+            <h3>Selected token</h3>
+        </div>
+
+        <div class="token-inspector-grid">
+
+            <div>
+                <span class="token-stat-label">
+                    TOKEN
+                </span>
+
+                <strong id="token-selected-text">
+                    —
+                </strong>
+            </div>
+
+            <div>
+                <span class="token-stat-label">
+                    PROBABILITY
+                </span>
+
+                <strong id="token-selected-probability">
+                    —
+                </strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- EDUCATIONAL NOTE -->
+
+    <div class="info-box token-generation-note">
+
+        <div class="info-box-title">
+            Important distinction
+        </div>
+
+        <p>
+            The model generates tokens using its full
+            vocabulary. The chart displays only the
+            recorded top candidates.
+        </p>
+
+        <p>
+            Changing the visualization temperature
+            does not change the generated answer.
+            A new generation is required to produce
+            a different sequence.
+        </p>
+
+    </div>
+
+</div>
+
+        </div>
+    </section>
+</div>
+
+
+
+
+<!-- =========================================================
+     SCRIPTS
+     ========================================================= -->
+
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+<!-- Markdown rendering for assistant responses -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<!-- HTML sanitization for rendered Markdown -->
+<script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+
+<script src="/static/app.js"></script>
+
+</body>
+</html>
