@@ -82,7 +82,7 @@ def vectorize_chunks(
     # Use model.encode(...) on the list of chunks.
     # Return a NumPy array of dtype np.float32, shape (N, D).
     # Hint: model.encode(chunks, batch_size=16, show_progress_bar=False)
-    raise NotImplementedError("TODO 2: encode document chunks")
+    return model.encode(chunks, batch_size=16, show_progress_bar=False)
 
 
 
