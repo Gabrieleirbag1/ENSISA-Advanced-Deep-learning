@@ -96,7 +96,8 @@ def embed_query(
     # Use the SAME model as for the document chunks.
     # Return one 1D np.float32 vector of shape (D,), not (1, D).
     # Hint: model.encode([question], show_progress_bar=False)[0]
-    raise NotImplementedError("TODO 3: encode the query")
+    return model.encode([question], show_progress_bar=False)[0]
+    # raise NotImplementedError("TODO 3: encode the query")
 
 
 
