@@ -15,7 +15,7 @@ from models import get_embedding_model, get_llm
 
 app = Flask(__name__)
 
-app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024 * 1024
 
 
 # ============================================================
