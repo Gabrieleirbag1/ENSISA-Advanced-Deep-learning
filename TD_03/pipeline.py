@@ -45,7 +45,23 @@ def chunk_text_with_metadata(
     # The first chunk has overlap_length = 0.
     # Stop as soon as the end of the text is reached.
     # Hint: use range(...), min(...), and text[start:end].
-    raise NotImplementedError("TODO 1: implement overlapping text chunks")
+    stride = chunk_size - overlap
+    chunks = []
+    for i in range(0, len(text), stride):
+        start = i
+        end = min(i + chunk_size, len(text))
+        overlap_length = max(0, i - (i - overlap))
+        chunks.append({
+            "index": i // stride,
+            "start": start,
+            "end": end,
+            "text": text[start:end],
+            "overlap_length": overlap_length
+        })
+        if end == len(text):
+            break
+    return chunks
+    # raise NotImplementedError("TODO 1: implement overlapping text chunks")
 
 
 # ============================================================
